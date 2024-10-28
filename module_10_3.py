@@ -3,9 +3,9 @@ import random
 import time
 
 class Bank:
-    def __init__(self):
-        self.balance = 500  # Начальный баланс
-        self.lock = threading.Lock()
+    def __init__(self, balance, lock = threading.Lock()):
+        self.balance = balance  # Начальный баланс
+        self.lock = lock
 
     def deposit(self):
         for _ in range(100):
@@ -32,7 +32,7 @@ class Bank:
                     self.lock.release()  # Разблокировка
 
 
-bk = Bank()
+bk = Bank(balance = 0)
 
 # Т.к. методы принимают self, в потоки нужно передать сам объект класса Bank
 th1 = threading.Thread(target=Bank.deposit, args=(bk,))
