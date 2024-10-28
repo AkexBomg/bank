@@ -1,47 +1,42 @@
-import random
 import threading
+import random
 import time
 
 class Bank:
-
-    def __init__(self, balance, lock = threading.Lock()):
-        self.balance = balance
-        self.lock = lock
+    def __init__(self, balance):
+        self.balance = balance  # Начальный баланс
+        self.lock = threading.Lock()
 
     def deposit(self):
-        i = 0
-        while i < 100:
+        for _ in range(100):
             if self.balance >= 500 and self.lock.locked() == True:
-                self.lock.release()
-            cashe = random.randint(50, 500)
-            self.balance = self.balance + cashe
-            time.sleep(0.01)
-            print(f"Пополнение: {cashe}, Баланс: {self.balance} ")
-            i = i+1
+                self.lock.release()  # Освобождение замка
+            amount = random.randint(50, 500)  # Случайная сумма пополнения
+            self.balance += amount
+            time.sleep(0.001)  # Имитация задержки
+            print(f"Пополнение: {amount}. Баланс: {self.balance}.")
 
     def take(self):
-        i = 0
-        while i < 100:
-            cashe = random.randint(50, 500)
-            print(f"Запрос на: {cashe}")
-            if self.balance < cashe:
-                print("Запрос отклонен, недостаточно средств")
-                self.lock.acquire()
+        for _ in range(100):
+            request = random.randint(50, 500)
+            print(f"Запрос на {request}")
+            if request <= self.balance:
+                self.balance -= request
+                print(f"Снятие: {request}. Баланс: {self.balance}")
             else:
-                self.balance = self.balance - cashe
-                print(f"Снятие: {cashe}, Баланс: {self.balance} ")
-            i = i + 1
+                print("Запрос отклонён, недостаточно средств")
+                self.lock.acquire()  # Блокировка потока
 
 
-bk = Bank(balance=0)
+bk = Bank(balance = 0)
 
-th1 = threading.Thread(target = Bank.deposit, args = (bk,))
-th2 = threading.Thread(target = Bank.take, args = (bk,))
+# Т.к. методы принимают self, в потоки нужно передать сам объект класса Bank
+th1 = threading.Thread(target=Bank.deposit, args=(bk,))
+th2 = threading.Thread(target=Bank.take, args=(bk,))
 
 th1.start()
 th2.start()
 th1.join()
 th2.join()
 
-print(f'Итоговый баланс: {bk.balance}')
 print(f'Итоговый баланс: {bk.balance}')
